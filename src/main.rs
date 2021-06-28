@@ -1,10 +1,14 @@
 // mod input;
 // mod hashmap;
-mod tables;
+// mod tables;
 // mod integer_input;
+// mod vectors;
+mod structs;
 fn main() {
 	// input::run();
 	// hashmap::run();
-	tables::run();
+	// tables::run();
 	// integer_input::run();
+	// vectors::run();
+	structs::run();
 }
