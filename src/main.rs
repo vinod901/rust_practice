@@ -1,4 +1,6 @@
-mod input;
+// mod input;
+mod hashmap;
 fn main() {
-	input::run();
+	// input::run();
+	hashmap::run();
 }
