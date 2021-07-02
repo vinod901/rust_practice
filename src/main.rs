@@ -12,3 +12,7 @@ fn main() {
 	// vectors::run();
 	structs::run();
 }
+
+// ....
+// 	uncomment the program mod's and their respective functions in the main function to see their output
+// ....
