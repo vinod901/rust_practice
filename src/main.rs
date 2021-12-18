@@ -1,18 +1,11 @@
-// mod input;
-// mod hashmap;
-// mod tables;
-// mod integer_input;
-// mod vectors;
-mod structs;
-fn main() {
-	// input::run();
-	// hashmap::run();
-	// tables::run();
-	// integer_input::run();
-	// vectors::run();
-	structs::run();
-}
+// #![feature(proc_macro_hygiene, decl_macro)]
+#[macro_use]
+extern crate rocket;
+// use std::error::Error;
+mod files;
+use files::routes::{hello, read_csv};
 
-// ....
-// 	uncomment the program mod's and their respective functions in the main function to see their output
-// ....
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![hello, read_csv])
+}
