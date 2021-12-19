@@ -1,4 +1,5 @@
 extern crate csv;
+extern crate sqlparser;
 // use csv::Error;
 // use rocket::{
 //     http::ContentType,
@@ -6,8 +7,10 @@ extern crate csv;
 //     response::{self, Responder, Response},
 // };
 use serde::{Deserialize, Serialize};
+use sqlparser::ast::{SetExpr, Statement};
+use sqlparser::dialect::GenericDialect;
+use sqlparser::parser::Parser;
 use std::time::Instant;
-// use std::io::Cursor;
 #[derive(Serialize, Deserialize, Debug)]
 struct Person {
     name: String,
@@ -20,21 +23,10 @@ struct Data {
     headers: Vec<String>,
     data: Vec<Vec<String>>,
 }
-// impl<'r> Responder<'r> for Data {
-//     fn respond_to(self, _: &Request) -> response::Result<'r> {
-//         Response::build()
-//             .sized_body(Cursor::new(format!("{}", self.name)))
-//             .raw_header("X-Data-Name", self.name)
-//             .header(ContentType::new("application", "x-person"))
-//             .ok()
-//     }
-// }
-#[get("/details/<name>/<prof>")]
-pub fn hello(name: String, prof: String) -> String {
-    let person = Person {
-        name: name,
-        profession: prof,
-    };
+
+#[get("/details/<name>/<profession>")]
+pub fn hello(name: String, profession: String) -> String {
+    let person = Person { name, profession };
     println!("Name : {}", person.name);
     println!("Profession : {}", person.profession);
     format!("{:?}", person).to_string()
@@ -90,5 +82,18 @@ pub fn read_csv(path: &str) -> String {
         stop
     )
     .to_string()
-    // table
+}
+#[get("/sql")]
+pub fn get_query() -> String {
+    let dialect = GenericDialect {};
+    let sql = "SELECT a, b FROM table_1";
+    let ast = Parser::parse_sql(&dialect, sql).unwrap();
+    for k in ast.iter() {
+        if let Statement::Query(query) = k {
+            if let SetExpr::Select(s) = &query.body {
+                println!("s : {:?}", s);
+            }
+        }
+    }
+    format!("AST : {:?}", ast).to_string()
 }

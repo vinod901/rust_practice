@@ -1,0 +1,73 @@
+pub struct Query {
+    pub with: Option<With>,
+    pub body: SetExpr,
+    pub order_by: Vec<OrderByExpr>,
+    pub limit: Option<Expr>,
+    pub offset: Option<Offset>,
+    pub fetch: Option<Fetch>,
+}
+
+pub struct Select {
+    pub distinct: bool,
+    pub top: Option<Top>,
+    pub projection: Vec<SelectItem>,
+    pub from: Vec<TableWithJoins>,
+    pub lateral_views: Vec<LateralView>,
+    pub selection: Option<Expr>,
+    pub group_by: Vec<Expr>,
+    pub cluster_by: Vec<Expr>,
+    pub distribute_by: Vec<Expr>,
+    pub sort_by: Vec<Expr>,
+    pub having: Option<Expr>,
+}
+
+pub struct ObjectName(pub Vec<Ident>);
+
+pub struct Ident {
+    pub value: String,
+    pub quote_style: Option<char>,
+}
+
+pub struct Table {
+    pub name: ObjectName,
+    pub alias: Option<TableAlias>,
+    pub args: Vec<FunctionArg>,
+    pub with_hints: Vec<Expr>,
+}
+
+pub struct TableWithJoins {
+    pub relation: TableFactor,
+    pub joins: Vec<Join>,
+}
+
+pub enum TableFactor {
+    Table {
+        name: ObjectName,
+        alias: Option<TableAlias>,
+        args: Vec<FunctionArg>,
+        with_hints: Vec<Expr>,
+    },
+    Derived {
+        lateral: bool,
+        subquery: Box<Query>,
+        alias: Option<TableAlias>,
+    },
+    TableFunction {
+        expr: Expr,
+        alias: Option<TableAlias>,
+    },
+    NestedJoin(Box<TableWithJoins>),
+}
+
+pub enum SetExpr {
+    Select(Box<Select>),
+    Query(Box<Query>),
+    SetOperation {
+        op: SetOperator,
+        all: bool,
+        left: Box<SetExpr>,
+        right: Box<SetExpr>,
+    },
+    Values(Values),
+    Insert(Statement),
+}
