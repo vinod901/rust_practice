@@ -1,6 +1,6 @@
 extern crate csv;
 extern crate sqlparser;
-// use csv::Error;
+use rocket::serde::json::Json;
 // use rocket::{
 //     http::ContentType,
 //     request::Request,
@@ -12,13 +12,13 @@ use sqlparser::dialect::GenericDialect;
 use sqlparser::parser::Parser;
 use std::time::Instant;
 #[derive(Serialize, Deserialize, Debug)]
-struct Person {
+pub struct Person {
     name: String,
     profession: String,
 }
 
 #[derive(Default, Debug)]
-struct Data {
+struct Info {
     name: String,
     headers: Vec<String>,
     data: Vec<Vec<String>>,
@@ -38,7 +38,7 @@ pub fn read_csv(path: &str) -> String {
     let mut reader = csv::Reader::from_path(path.clone()).expect("sorry, can't open the file!");
     println!("{:?}", reader);
 
-    let mut table: Data = Data {
+    let mut table: Info = Info {
         name: path.to_string(),
         headers: Vec::new(),
         data: Vec::new(),
@@ -96,4 +96,8 @@ pub fn get_query() -> String {
         }
     }
     format!("AST : {:?}", ast).to_string()
+}
+#[post("/post", data = "<data>")]
+pub fn send_data(data: Json<Person>) -> String {
+    format!("I am {}. i am a {}!", data.name, data.profession).to_string()
 }

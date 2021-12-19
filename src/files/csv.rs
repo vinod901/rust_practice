@@ -1,5 +1,6 @@
 extern crate csv;
 use csv::Error;
+#[allow(dead_code)]
 pub fn read_csv(path: &str) -> Result<(), Error> {
     println!("csv file : {}\n\n", path);
     let mut reader = csv::Reader::from_path(path).expect("sorry, can't open the file!");
