@@ -1,17 +1,15 @@
 extern crate csv;
 extern crate sqlparser;
 use rocket::serde::json::Json;
-// use rocket::{
-//     http::ContentType,
-//     request::Request,
-//     response::{self, Responder, Response},
-// };
 use serde::{Deserialize, Serialize};
-use sqlparser::ast::{SetExpr, Statement};
-use sqlparser::dialect::GenericDialect;
-use sqlparser::parser::Parser;
+use sqlparser::{
+    ast::{SetExpr, Statement},
+    dialect::GenericDialect,
+    parser::Parser,
+};
 use std::time::Instant;
-#[derive(Serialize, Deserialize, Debug)]
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Person {
     name: String,
     profession: String,
@@ -31,6 +29,7 @@ pub fn hello(name: String, profession: String) -> String {
     println!("Profession : {}", person.profession);
     format!("{:?}", person).to_string()
 }
+
 #[get("/csv/<path>")]
 pub fn read_csv(path: &str) -> String {
     let now = Instant::now();
@@ -72,7 +71,7 @@ pub fn read_csv(path: &str) -> String {
         table.data.len()
     );
     format!(
-        "read csv file : {}\nHeaders : {:?}\nHeader length : {}\nHeader read time : {}\nNumber of rows : {}\nRows read time : {}\nTotal duration : {}",
+        "read csv file : {}\nHeaders : {:?}\nHeader length : {}\nHeader read time : {} micro seconds\nNumber of rows : {}\nRows read time : {} micro seconds\nTotal duration : {} micro seconds",
         path,
         table.headers,
         table.headers.len(),
@@ -83,10 +82,11 @@ pub fn read_csv(path: &str) -> String {
     )
     .to_string()
 }
+
 #[get("/sql")]
 pub fn get_query() -> String {
     let dialect = GenericDialect {};
-    let sql = "SELECT a, b FROM table_1";
+    let sql = "SELECT SUM(a),SUM(b) FROM table_1";
     let ast = Parser::parse_sql(&dialect, sql).unwrap();
     for k in ast.iter() {
         if let Statement::Query(query) = k {
@@ -97,7 +97,9 @@ pub fn get_query() -> String {
     }
     format!("AST : {:?}", ast).to_string()
 }
+
 #[post("/post", data = "<data>")]
 pub fn send_data(data: Json<Person>) -> String {
     format!("I am {}. i am a {}!", data.name, data.profession).to_string()
+    // serde_json::to_string(&data).unwrap()
 }

@@ -71,3 +71,112 @@ pub enum SetExpr {
     Values(Values),
     Insert(Statement),
 }
+
+pub enum SelectItem {
+    UnnamedExpr(Expr),
+    ExprWithAlias {
+        expr: Expr,
+        alias: Ident,
+    },
+    QualifiedWildcard(ObjectName),
+    Wildcard,
+}
+
+pub enum Expr {
+    Identifier(Ident),
+    Wildcard,
+    QualifiedWildcard(Vec<Ident>),
+    CompoundIdentifier(Vec<Ident>),
+    IsNull(Box<Expr>),
+    IsNotNull(Box<Expr>),
+    IsDistinctFrom(Box<Expr>, Box<Expr>),
+    IsNotDistinctFrom(Box<Expr>, Box<Expr>),
+    InList {
+        expr: Box<Expr>,
+        list: Vec<Expr>,
+        negated: bool,
+    },
+    InSubquery {
+        expr: Box<Expr>,
+        subquery: Box<Query>,
+        negated: bool,
+    },
+    Between {
+        expr: Box<Expr>,
+        negated: bool,
+        low: Box<Expr>,
+        high: Box<Expr>,
+    },
+    BinaryOp {
+        left: Box<Expr>,
+        op: BinaryOperator,
+        right: Box<Expr>,
+    },
+    UnaryOp {
+        op: UnaryOperator,
+        expr: Box<Expr>,
+    },
+    Cast {
+        expr: Box<Expr>,
+        data_type: DataType,
+    },
+    TryCast {
+        expr: Box<Expr>,
+        data_type: DataType,
+    },
+    Extract {
+        field: DateTimeField,
+        expr: Box<Expr>,
+    },
+    Substring {
+        expr: Box<Expr>,
+        substring_from: Option<Box<Expr>>,
+        substring_for: Option<Box<Expr>>,
+    },
+    Trim {
+        expr: Box<Expr>,
+        trim_where: Option<(TrimWhereField, Box<Expr>)>,
+    },
+    Collate {
+        expr: Box<Expr>,
+        collation: ObjectName,
+    },
+    Nested(Box<Expr>),
+    Value(Value),
+    TypedString {
+        data_type: DataType,
+        value: String,
+    },
+    MapAccess {
+        column: Box<Expr>,
+        keys: Vec<Value>,
+    },
+    Function(Function),
+    Case {
+        operand: Option<Box<Expr>>,
+        conditions: Vec<Expr>,
+        results: Vec<Expr>,
+        else_result: Option<Box<Expr>>,
+    },
+    Exists(Box<Query>),
+    Subquery(Box<Query>),
+    ListAgg(ListAgg),
+    GroupingSets(Vec<Vec<Expr>>),
+    Cube(Vec<Vec<Expr>>),
+    Rollup(Vec<Vec<Expr>>),
+}
+
+pub struct Function {
+    pub name: ObjectName,
+    pub args: Vec<FunctionArg>,
+    pub over: Option<WindowSpec>,
+    pub distinct: bool,
+}
+
+pub enum FunctionArg {
+    Named {
+        name: Ident,
+        arg: Expr,
+    },
+    Unnamed(Expr),
+}
