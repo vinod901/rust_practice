@@ -86,7 +86,7 @@ pub fn read_csv(path: &str) -> String {
 #[get("/sql")]
 pub fn get_query() -> String {
     let dialect = GenericDialect {};
-    let sql = "SELECT SUM(a),SUM(b) FROM table_1";
+    let sql = "SELECT * FROM table_1";
     let ast = Parser::parse_sql(&dialect, sql).unwrap();
     for k in ast.iter() {
         if let Statement::Query(query) = k {
