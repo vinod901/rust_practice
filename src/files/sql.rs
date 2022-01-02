@@ -6,10 +6,26 @@ use sqlparser::{
     parser::Parser,
 };
 
+#[derive(Debug)]
+struct ColInfo {
+    name: String,
+    alias: Option<String>,
+    fun: Option<String>,
+}
+impl ColInfo {
+    fn new() -> ColInfo {
+        ColInfo {
+            name: "".to_string(),
+            alias: None,
+            fun: None,
+        }
+    }
+}
+
 #[get("/sql/select")]
 pub fn sql_select() -> String {
     let dialect = GenericDialect {};
-    let query = "SELECT AVG(col) FROM table_1 where -30+40";
+    let query = "SELECT left(col_2,2) FROM table_1 WHERE col_1 > col_2";
     let mut ast = Parser::parse_sql(&dialect, query).unwrap();
     let query2 = match ast.pop().unwrap() {
         Statement::Query(query2) => query2,
@@ -41,13 +57,63 @@ fn get_table_name(select: Box<Select>) -> String {
     }
 }
 
-fn get_cols(projection: Vec<SelectItem>) -> Vec<String> {
+fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
     let mut cols = Vec::new();
+    let mut col = ColInfo::new();
+    let mut fun: Option<String> = None;
+    let mut alias: Option<String> = None;
+    let mut name: String;
     for item in projection {
-        let col = match item {
-            SelectItem::UnnamedExpr(item) => item.to_string(),
-            SelectItem::Wildcard => return vec![format!("select all columns from table")],
-            _ => return vec![format!("not a UnnamedExpr!")],
+        match item {
+            SelectItem::UnnamedExpr(item) => {
+                match &item {
+                    Expr::Function(f) => {
+                        println!("function : {}", f.name.to_string());
+                        fun = Some(f.name.to_string());
+                        name = item.to_string();
+                    }
+                    _ => {
+                        name = item.to_string();
+                        fun = None
+                    }
+                };
+                col = ColInfo {
+                    name,
+                    alias: None,
+                    fun: fun,
+                };
+            }
+            SelectItem::ExprWithAlias { expr, alias } => {
+                match expr {
+                    Expr::Function(f) => {
+                        fun = Some(f.name.to_string());
+                        name = f.args[0].to_string();
+                    }
+                    _ => {
+                        name = expr.to_string();
+                        fun = None;
+                    }
+                };
+                col = ColInfo {
+                    name,
+                    alias: Some(alias.to_string()),
+                    fun,
+                };
+            }
+            SelectItem::Wildcard => {
+                col = ColInfo {
+                    name: "*".to_string(),
+                    alias: None,
+                    fun: None,
+                }
+            }
+            _ => {
+                col = ColInfo {
+                    name: "error".to_string(),
+                    alias: None,
+                    fun: None,
+                }
+            }
         };
         cols.push(col);
     }
@@ -57,8 +123,7 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<String> {
 fn where_fn(expression: Expr) -> String {
     match expression {
         Expr::BinaryOp { left, op, right } => {
-            let expr = format!("{}{}{}", left, op, right);
-            println!("{}", meval::eval_str(expr).unwrap());
+            // println!("{}", meval::eval_str(expr).unwrap());
             return format!("left:{}\nop:{}\nright:{}", left, op, right);
         }
         Expr::UnaryOp { op, expr } => format!("left:{}\nop:{:?}", op, expr),
