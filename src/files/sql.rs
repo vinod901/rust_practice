@@ -85,7 +85,6 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
                         //         }
                         //         println!("cols : {:?}", cols);
                         //     }
-                        //     _ => todo!(),
                         // }
                     }
                     _ => {
@@ -164,3 +163,5 @@ fn where_fn(expression: Expr) -> String {
 // SELECT CompanyName,  ProductCount = (SELECT COUNT(P.id) FROM [Product] P WHERE P.SupplierId = S.Id) FROM Supplier S;
 // SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate FROM Orders;
 // SELECT * FROM Customers LIMIT 3;
+
+// i like super man!!!!
