@@ -21,7 +21,7 @@ impl ColInfo {
         }
     }
 }
-// just for demonstration!
+// just for demonstration========================================================
 #[get("/sql/select")]
 pub fn sql_select() -> String {
     let dialect = GenericDialect {};
