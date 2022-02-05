@@ -25,13 +25,13 @@ impl ColInfo {
 #[get("/sql/select")]
 pub fn sql_select() -> String {
     let dialect = GenericDialect {};
-    let query = "SELECT left(col_2,2) FROM table_1 WHERE col_1 > col_2";
+    let query = "SELECT * FROM Customers LIMIT 3;";
     let mut ast = Parser::parse_sql(&dialect, query).unwrap();
     let query2 = match ast.pop().unwrap() {
         Statement::Query(query2) => query2,
         _ => return format!("Not a select query"),
     };
-    let select = match query2.body {
+    let select = match &query2.body {
         SetExpr::Select(select) => select,
         _ => return format!("Only select query supported!"),
     };
@@ -41,7 +41,13 @@ pub fn sql_select() -> String {
         let expression = where_fn(where_eq);
         println!("{}", expression);
     }
-    format!("projection:{:?}\nname:{}\ncols:{:?}", select, name, cols).to_string()
+    let s = "male".to_string();
+    println!("{:?}", s.get(0..2).unwrap());
+    format!(
+        "projection:{:?}\nname:{}\ncols:{:?}\nquery:{:?}\nast:{:?}",
+        select, name, cols, query, query2
+    )
+    .to_string()
 }
 
 fn get_table_name(select: Box<Select>) -> String {
@@ -68,9 +74,19 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
             SelectItem::UnnamedExpr(item) => {
                 match &item {
                     Expr::Function(f) => {
-                        println!("function : {}", f.name.to_string());
                         fun = Some(f.name.to_string());
                         name = item.to_string();
+                        println!("{:?}", f.args[0].to_string());
+                        // match f.name.to_string().to_uppercase().as_str() {
+                        //     "CONCAT" => {
+                        //         let mut cols = Vec::new();
+                        //         for c in f.args.iter() {
+                        //             cols.push(c.to_string());
+                        //         }
+                        //         println!("cols : {:?}", cols);
+                        //     }
+                        //     _ => todo!(),
+                        // }
                     }
                     _ => {
                         name = item.to_string();
@@ -88,6 +104,16 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
                     Expr::Function(f) => {
                         fun = Some(f.name.to_string());
                         name = f.args[0].to_string();
+                        match f.name.to_string().to_uppercase().as_str() {
+                            "CONCAT" => {
+                                let mut cols = Vec::new();
+                                for c in f.args.iter() {
+                                    cols.push(c.to_string());
+                                }
+                                println!("cols : {:?}", cols);
+                            }
+                            _ => todo!(),
+                        }
                     }
                     _ => {
                         name = expr.to_string();
@@ -130,3 +156,11 @@ fn where_fn(expression: Expr) -> String {
         _ => format!("not a BinaryOp"),
     }
 }
+
+// SELECT a.studentid, a.name, b.total_marks FROM student a, marks b;
+// SELECT a.studentid, a.name, b.total_marks FROM student a, marks b WHERE a.studentid = b.studentid AND b.total_marks > (SELECT total_marks FROM marks WHERE studentid =  'V002');
+// checkout https://www.w3resource.com/sql/subqueries/understanding-sql-subqueries.php
+
+// SELECT CompanyName,  ProductCount = (SELECT COUNT(P.id) FROM [Product] P WHERE P.SupplierId = S.Id) FROM Supplier S;
+// SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate FROM Orders;
+// SELECT * FROM Customers LIMIT 3;
