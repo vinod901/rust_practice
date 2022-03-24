@@ -8,16 +8,16 @@ use sqlparser::{
 
 #[derive(Debug)]
 struct ColInfo {
-    name: String,
-    alias: Option<String>,
-    fun: Option<String>,
+    _name: String,
+    _alias: Option<String>,
+    _fun: Option<String>,
 }
 impl ColInfo {
     fn new() -> ColInfo {
         ColInfo {
-            name: "".to_string(),
-            alias: None,
-            fun: None,
+            _name: "".to_string(),
+            _alias: None,
+            _fun: None,
         }
     }
 }
@@ -25,14 +25,16 @@ impl ColInfo {
 #[get("/sql/select")]
 pub fn sql_select() -> String {
     let dialect = GenericDialect {};
-    let query = "SELECT * FROM Customers LIMIT 3;";
+    let query = "SELECT number of deaths, number of births from table_1";
     let mut ast = Parser::parse_sql(&dialect, query).unwrap();
     let query2 = match ast.pop().unwrap() {
         Statement::Query(query2) => query2,
         _ => return format!("Not a select query"),
     };
+    println!("{:?}", &query2.body);
     let select = match &query2.body {
         SetExpr::Select(select) => select,
+        // SetExpr::SetOperation{..}=> println!("{:?}",select),
         _ => return format!("Only select query supported!"),
     };
     let name = get_table_name(select.clone());
@@ -65,16 +67,16 @@ fn get_table_name(select: Box<Select>) -> String {
 
 fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
     let mut cols = Vec::new();
-    let mut col = ColInfo::new();
-    let mut fun: Option<String> = None;
-    let mut alias: Option<String> = None;
+    let mut _col = ColInfo::new();
+    let mut _fun: Option<String> = None;
+    let mut _alias: Option<String> = None;
     let mut name: String;
     for item in projection {
         match item {
             SelectItem::UnnamedExpr(item) => {
                 match &item {
                     Expr::Function(f) => {
-                        fun = Some(f.name.to_string());
+                        _fun = Some(f.name.to_string());
                         name = item.to_string();
                         println!("{:?}", f.args[0].to_string());
                         // match f.name.to_string().to_uppercase().as_str() {
@@ -89,19 +91,19 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
                     }
                     _ => {
                         name = item.to_string();
-                        fun = None
+                        _fun = None
                     }
                 };
-                col = ColInfo {
-                    name,
-                    alias: None,
-                    fun: fun,
+                _col = ColInfo {
+                    _name: name,
+                    _alias: None,
+                    _fun,
                 };
             }
             SelectItem::ExprWithAlias { expr, alias } => {
                 match expr {
                     Expr::Function(f) => {
-                        fun = Some(f.name.to_string());
+                        _fun = Some(f.name.to_string());
                         name = f.args[0].to_string();
                         match f.name.to_string().to_uppercase().as_str() {
                             "CONCAT" => {
@@ -116,31 +118,31 @@ fn get_cols(projection: Vec<SelectItem>) -> Vec<ColInfo> {
                     }
                     _ => {
                         name = expr.to_string();
-                        fun = None;
+                        _fun = None;
                     }
                 };
-                col = ColInfo {
-                    name,
-                    alias: Some(alias.to_string()),
-                    fun,
+                _col = ColInfo {
+                    _name: name,
+                    _alias: Some(alias.to_string()),
+                    _fun,
                 };
             }
             SelectItem::Wildcard => {
-                col = ColInfo {
-                    name: "*".to_string(),
-                    alias: None,
-                    fun: None,
+                _col = ColInfo {
+                    _name: "*".to_string(),
+                    _alias: None,
+                    _fun: None,
                 }
             }
             _ => {
-                col = ColInfo {
-                    name: "error".to_string(),
-                    alias: None,
-                    fun: None,
+                _col = ColInfo {
+                    _name: "error".to_string(),
+                    _alias: None,
+                    _fun: None,
                 }
             }
         };
-        cols.push(col);
+        cols.push(_col);
     }
     cols
 }
