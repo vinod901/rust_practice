@@ -500,6 +500,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 
 [[package]]
+name = "joinable"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afef723671932311ced8c267ace308277aa3f694184a0c4d89fd413e23ddb1fd"
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -953,6 +959,7 @@ name = "rust_practice"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "joinable",
  "meval",
  "rocket",
  "serde",

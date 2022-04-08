@@ -25,7 +25,7 @@ impl ColInfo {
 #[get("/sql/select")]
 pub fn sql_select() -> String {
     let dialect = GenericDialect {};
-    let query = "SELECT number of deaths, number of births from table_1";
+    let query = "SELECT column_name FROM table1 RIGHT JOIN table2 ON table1.column_name = table2.column_name; ";
     let mut ast = Parser::parse_sql(&dialect, query).unwrap();
     let query2 = match ast.pop().unwrap() {
         Statement::Query(query2) => query2,

@@ -3,6 +3,7 @@ extern crate rocket;
 mod files;
 use files::{
     fold::fold,
+    joins::joins,
     routes::{get_query, hello, read_csv, send_data},
     sql::sql_select,
 };
@@ -11,6 +12,6 @@ use files::{
 fn rocket() -> _ {
     rocket::build().mount(
         "/",
-        routes![hello, read_csv, get_query, send_data, fold, sql_select],
+        routes![hello, read_csv, get_query, send_data, fold, sql_select, joins],
     )
 }
