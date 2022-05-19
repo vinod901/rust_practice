@@ -6,12 +6,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-text_io = "0.1.8"
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
-csv = "1.1" 
-serde = { version = "1.0", features = ["derive"] }
-sqlparser = "0.16.0"
-meval = "0.2"
-strum = "0.23.0"
-strum_macros="0.23.1"
-joinable = "0.1.0"
+tokio={version="1",features=["full"]}
+tokio-stream="0.1"
+mime_guess="2"
+aws-config="0.12.0"
+aws-sdk-s3="0.12.0"
+anyhow="1.0"
