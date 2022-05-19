@@ -1,19 +1,26 @@
-// #![allow(unused)]
 mod services;
 use anyhow::{Ok, Result};
-use aws_config::meta::region::RegionProviderChain;
-use aws_sdk_s3::*;
 
-use services::s3::*;
+use services::{dynamodb::*, s3::*};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = get_aws_client().await?;
-    let buckets = show_buckets(&client).await?;
+    let client = get_s3_client().await?;
+    let buckets = list_buckets(&client).await?;
+    println!("S3 buckets : {}", buckets.len());
     for bucket in &buckets {
-        list_objects(&client, bucket).await?;
+        println!("  {}", bucket);
     }
-
+    let dynamo_client = get_dynamo_client().await?;
+    let tables = list_tables(&dynamo_client).await?;
+    println!("\nDynamoDB tables : {}", tables.len());
+    for table in tables {
+        let items = list_items(&dynamo_client, table.as_str()).await?;
+        println!("  {} : {} items", table, items.len());
+        // for item in items {
+        //     println!("      {:?}", item);
+        // }
+    }
     // create_bucket(&client, "new-bucket-by-vinod901", REGION).await?;
 
     // client
@@ -46,19 +53,12 @@ async fn main() -> Result<()> {
 
     // list_objects(&client, "atom-sandbox").await?;
 
-    upload_object(
-        &client,
-        "atom-sandbox",
-        "src/main.rs",
-        "test_files/src/main.rs",
-    )
-    .await?;
+    // upload_object(
+    //     &client,
+    //     "atom-sandbox",
+    //     "src/main.rs",
+    //     "test_files/src/main.rs",
+    // )
+    // .await?;
     Ok(())
-}
-
-async fn get_aws_client() -> Result<Client> {
-    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
-    let config = aws_config::from_env().region(region_provider).load().await;
-    let client = Client::new(&config);
-    Ok(client)
 }
